@@ -69,21 +69,30 @@ class UnleashedTTS:
         except Exception as e:
             print("[ElevenLabs] Exception: ", e)
             return
-
-        audio_stream = generate(text=message, voice=voice, model=model, stream = True)
+        if save:
+            print("[ElevenLabs] Generating audio and saving to file...")
+            audio_stream = generate(text=message, voice=voice, model=model, stream = False)
+        else:
+            audio_stream = generate(text=message, voice=voice, model=model, stream = True)
 
         print("[ElevenLabs] Starting the stream...")
         try:
-            stream(audio_stream)  # type: ignore
             if save:
                 if not os.path.exists("saves"):
                     os.mkdir("saves")
                 audio = AudioSegment.empty()
-                audio_bytes = b''.join(audio_stream)
+                audio_bytes = b''.join(bytes([item]) for item in audio_stream)
                 audio += AudioSegment.from_mp3(io.BytesIO(audio_bytes))
+                if os.path.exists(f"saves/{message[:10]}.wav"):
+                    counter = 1
+                    while os.path.exists(f"saves/{message[:10]}_{counter}.wav"):
+                        counter += 1
+                    audio.export(f"saves/{message[:10]}_{counter}.wav", format='wav')
+                    print(f"[ElevenLabs] Saved to saves/{message[:10]}_{counter}.wav")
                 audio.export(f"saves/{message[:10]}.wav", format='wav')
                 print(f"[ElevenLabs] Saved to saves/{message[:10]}.wav")
-            
+            else:
+                stream(audio_stream)  # type: ignore
             # Restart accounts thread
             self.__update_accounts_thread = threading.Thread(
                 target=UnleashedTTS.__update_accounts, args=[self]
