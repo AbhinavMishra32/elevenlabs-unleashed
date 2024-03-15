@@ -103,7 +103,7 @@ def create_account():
     options.headless = os.environ.get("DEBUG", "0") == "0"
     options.add_argument("--disable-logging")
     options.add_argument("--log-level=3")
-    options.add_argument("--window-size=1440,1280")
+    options.add_argument("--window-size=1366,720")
     driver = uc.Chrome(options=options)
 
     driver.get(SIGNUP_URL)
