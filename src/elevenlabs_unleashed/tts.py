@@ -89,8 +89,9 @@ class UnleashedTTS:
                         counter += 1
                     audio.export(f"saves/{message[:10]}_{counter}.wav", format='wav')
                     print(f"[ElevenLabs] Saved to saves/{message[:10]}_{counter}.wav")
-                audio.export(f"saves/{message[:10]}.wav", format='wav')
-                print(f"[ElevenLabs] Saved to saves/{message[:10]}.wav")
+                else:
+                    audio.export(f"saves/{message[:10]}.wav", format='wav')
+                    print(f"[ElevenLabs] Saved to saves/{message[:10]}.wav")
             else:
                 stream(audio_stream)  # type: ignore
             # Restart accounts thread
