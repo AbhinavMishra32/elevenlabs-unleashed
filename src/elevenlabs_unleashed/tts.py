@@ -7,6 +7,9 @@ from elevenlabs.api.error import APIError
 import json
 import sys
 import pathlib
+from pydub import AudioSegment
+import io
+import io
 
 
 def __get_datadir() -> pathlib.Path:
@@ -59,20 +62,28 @@ class UnleashedTTS:
         self.__update_accounts_thread = threading.Thread(target=UnleashedTTS.__update_accounts, args=[self])  # type: ignore
         self.__update_accounts_thread.start()
 
-    def speak(self, message: str, voice="Josh", model="eleven_multilingual_v1"):
+    def speak(self, message: str, voice="Josh", model="eleven_multilingual_v1", save = False):
         print("[ElevenLabs] Selecting account...")
-
         try:
             self.__select_account(len(message))
         except Exception as e:
             print("[ElevenLabs] Exception: ", e)
             return
 
-        audio_stream = generate(text=message, voice=voice, model=model, stream=True)
+        audio_stream = generate(text=message, voice=voice, model=model, stream = True)
 
         print("[ElevenLabs] Starting the stream...")
         try:
             stream(audio_stream)  # type: ignore
+            if save:
+                if not os.path.exists("saves"):
+                    os.mkdir("saves")
+                audio = AudioSegment.empty()
+                audio_bytes = b''.join(audio_stream)
+                audio += AudioSegment.from_mp3(io.BytesIO(audio_bytes))
+                audio.export(f"saves/{message[:10]}.wav", format='wav')
+                print(f"[ElevenLabs] Saved to saves/{message[:10]}.wav")
+            
             # Restart accounts thread
             self.__update_accounts_thread = threading.Thread(
                 target=UnleashedTTS.__update_accounts, args=[self]
